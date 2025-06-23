@@ -22,6 +22,7 @@ export default function Home() {
     setWallet({ ...mockWalletData, address: input });
     setClusters(mockClusterData);
   };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-10">
       <h1 className="text-3xl font-bold mb-6">WRM Platform Demo</h1>
