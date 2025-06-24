@@ -2,37 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WRM Debug Demo</title>
-  <!-- TailwindCSS -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WRM Static Demo (Fixed)</title>
+  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React & ReactDOM UMD bundles -->
+  <!-- React & ReactDOM UMD -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
 <body class="m-0">
-  <div id="root" class="p-4"></div>
-
+  <div id="root"></div>
   <script>
-    // Show any uncaught errors in the root div:
-    window.onerror = function(msg, url, line, col, error) {
-      const el = document.getElementById('root');
-      el.innerHTML = `
-        <div style="font-family: sans-serif; color: red;">
-          <h2>🚨 Error</h2>
-          <pre>${msg}</pre>
-          <p>Line ${line}, Column ${col}</p>
-        </div>`;
-      return true;
-    };
+    // catch parse & runtime errors
+    window.addEventListener('error', e => {
+      document.getElementById('root').innerHTML =
+        '<pre style="color:red; padding:1em;">Error: ' + e.message + '</pre>';
+    });
 
     const { useState } = React;
     const { createRoot } = ReactDOM;
 
-    // ← Hard-code your key here
-    const COVALENT_API_KEY = cqt_rQKX7J6DYgdKcXvrbjXgVbC3xDRf;
+    // ← hard-code your Covalent key here
+    const COVALENT_API_KEY = "pk_live_YOUR_REAL_KEY_HERE";
 
-    // Supported chains
     const CHAINS = [
       { id: 1, name: 'Ethereum' },
       { id: 137, name: 'Polygon' },
@@ -41,9 +33,10 @@
     ];
 
     async function fetchBalances(chainId, address) {
-      const url = `https://api.covalenthq.com/v1/${chainId}/address/${address}/balances_v2/?key=${COVALENT_API_KEY}`;
+      const url = 
+        `https://api.covalenthq.com/v1/${chainId}/address/${address}/balances_v2/?key=${COVALENT_API_KEY}`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
+      if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
       const { data } = await res.json();
       return data.items;
     }
@@ -57,60 +50,62 @@
         { address: '0x789...ghi', similarity: '85%' }
       ]);
 
-      const handleSearch = async () => {
-        if (!address) return alert('Enter a wallet address');
+      const handleFetch = async () => {
+        if (!address) return alert('Enter wallet address');
         const items = await fetchBalances(chain, address);
         setBalances(items);
       };
 
+      // find native & tokens
       const native = balances.find(i => i.type === 'native') || {};
+      const nativeBalance = native.balance
+        ? (native.balance / Math.pow(10, native.contract_decimals)).toFixed(4)
+        : '0';
       const tokens = balances.filter(i => i.type === 'token');
 
-      return React.createElement('div', {className:'min-h-screen bg-gray-100 flex flex-col items-center p-6'}, [
-        React.createElement('h1', {className:'text-3xl font-bold mb-4'}, 'WRM Debug Demo'),
-        React.createElement('div', {className:'flex gap-2 mb-4'}, [
-          React.createElement('select', {
-            className:'px-3 py-2 border rounded',
-            value: chain,
-            onChange: e => setChain(Number(e.target.value))
-          }, CHAINS.map(c => React.createElement('option',{key:c.id,value:c.id},c.name))),
-          React.createElement('input', {
-            className:'px-3 py-2 border rounded w-64',
-            placeholder:'Wallet address…',
-            value: address,
-            onInput: e => setAddress(e.target.value)
-          }),
-          React.createElement('button', {
-            className:'bg-blue-600 text-white px-4 py-2 rounded',
-            onClick: handleSearch
-          }, 'Fetch')
-        ]),
-        balances.length>0 && React.createElement('div',{className:'bg-white p-4 rounded shadow mb-4 w-full max-w-xl'},[
-          React.createElement('p',null,`Address: ${address}`),
-          React.createElement('p',null,`Chain: ${CHAINS.find(c=>c.id===chain).name}`),
-          React.createElement('p',null,`Native: ${native.balance? (native.balance/1e${native.contract_decimals}).toFixed(4) : '0'}`),
-          React.createElement('h3',{className:'mt-2'},'Tokens:'),
-          React.createElement('ul',{className:'list-disc pl-6 max-h-40 overflow-auto'},
-            tokens.map(tok=>React.createElement('li',{key:tok.contract_address},
-              `${tok.contract_ticker_symbol}: ${(tok.balance/1e${tok.contract_decimals}).toFixed(4)}`
-            ))
-          )
-        ]),
-        React.createElement('div',{className:'bg-white p-4 rounded shadow w-full max-w-xl'},[
-          React.createElement('h3',null,'Mock Clusters:'),
-          React.createElement('ul',{className:'list-disc pl-6'},
-            clusters.map(w=>React.createElement('li',{key:w.address},`${w.address} — ${w.similarity}`))
-          )
-        ])
-      ]);
+      return React.createElement('div',
+        { className:'min-h-screen bg-gray-100 p-6 flex flex-col items-center' }, [
+          React.createElement('h1',{className:'text-3xl mb-4'}, 'WRM Demo'),
+          React.createElement('div',{className:'flex gap-2 mb-4'}, [
+            React.createElement('select', {
+              value:chain,
+              onChange:e=>setChain(Number(e.target.value)),
+              className:'border rounded px-2'
+            }, CHAINS.map(c=>React.createElement('option',{key:c.id,value:c.id},c.name))),
+            React.createElement('input',{
+              placeholder:'Wallet address…',
+              value:address,
+              onInput:e=>setAddress(e.target.value),
+              className:'border rounded px-2'
+            }),
+            React.createElement('button',{
+              onClick:handleFetch,
+              className:'bg-blue-600 text-white px-3 rounded'
+            }, 'Fetch')
+          ]),
+          balances.length>0 && React.createElement('div',{className:'bg-white p-4 rounded shadow w-full max-w-xl mb-4'},[
+            React.createElement('p',null,`Address: ${address}`),
+            React.createElement('p',null,`Chain: ${CHAINS.find(c=>c.id===chain).name}`),
+            React.createElement('p',null,`Native: ${nativeBalance} ${native.contract_ticker_symbol||''}`),
+            React.createElement('h3',{className:'mt-2'},'Tokens:'),
+            React.createElement('ul',{className:'list-disc pl-5 max-h-32 overflow-auto'},
+              tokens.map(t=>React.createElement('li',{key:t.contract_address},
+                `${t.contract_ticker_symbol}: ${(t.balance/Math.pow(10,t.contract_decimals)).toFixed(4)}`
+              ))
+            )
+          ]),
+          React.createElement('div',{className:'bg-white p-4 rounded shadow w-full max-w-xl'},[
+            React.createElement('h3',null,'Mock Clusters'),
+            React.createElement('ul',{className:'list-disc pl-5'},
+              clusters.map(w=>React.createElement('li',{key:w.address},`${w.address} — ${w.similarity}`))
+            )
+          ])
+        ]
+      );
     }
 
-    // Wrap render in try/catch
-    try {
-      createRoot(document.getElementById('root')).render(React.createElement(App));
-    } catch (e) {
-      window.onerror(e.message, '', e.lineNumber || 0, e.columnNumber || 0, e);
-    }
+    // render
+    createRoot(document.getElementById('root')).render(React.createElement(App));
   </script>
 </body>
 </html>
