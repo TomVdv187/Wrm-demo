@@ -2,18 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WRM Static Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WRM Static Demo (UMD)</title>
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React + ReactDOM via CDN -->
-  <script type="module">
-    import React, { useState } from 'https://esm.sh/react';
-    import ReactDOM from 'https://esm.sh/react-dom';
+  <!-- React & ReactDOM UMD bundles -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body class="m-0">
+  <div id="root"></div>
+  <script>
+    const { useState } = React;
+    const { createRoot } = ReactDOM;
+
     function App() {
       const [input, setInput] = useState("");
       const [wallet, setWallet] = useState(null);
       const [clusters, setClusters] = useState([]);
+
       const mockWalletData = {
         address: "0x123...abc",
         chains: ["Ethereum","Polygon"],
@@ -21,62 +28,49 @@
         nfts:["Pudgy Penguin #1234","Otherdeed #987"],
         tags:["DeFi Degen","NFT Enthusiast"]
       };
-      const mockClusterData=[
-        {address:"0x456...def",similarity:"90%"},
-        {address:"0x789...ghi",similarity:"85%"}
+      const mockClusterData = [
+        { address: "0x456...def", similarity: "90%" },
+        { address: "0x789...ghi", similarity: "85%" }
       ];
-      return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center p-10">
-          <h1 className="text-3xl font-bold mb-6">WRM Static Demo</h1>
-          <div className="flex gap-2 mb-8">
-            <input
-              className="w-96 px-4 py-2 rounded-lg border"
-              placeholder="Enter wallet address..."
-              value={input}
-              onInput={e => setInput(e.target.value)}
-            />
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow"
-              onClick={()=>{ setWallet({...mockWalletData,address:input}); setClusters(mockClusterData); }}
-            >
-              Search
-            </button>
-          </div>
-          {wallet && (
-            <div className="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-6 mb-8">
-              <h2 className="text-xl font-bold">Wallet: {wallet.address}</h2>
-              <p className="mt-2">Chains: {wallet.chains.join(", ")}</p>
-              <p>Total Value: ${wallet.totalValue}</p>
-              <p>NFTs: {wallet.nfts.length}</p>
-              <div className="mt-2">
-                <h4 className="font-semibold">Tags:</h4>
-                <div className="flex gap-2 mt-1">
-                  {wallet.tags.map(tag => (
-                    <span key={tag} className="bg-purple-200 text-purple-800 px-2 py-1 rounded-xl text-sm">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          {clusters.length > 0 && (
-            <div className="w-full max-w-xl bg-white shadow-md rounded-2xl p-6">
-              <h3 className="text-lg font-semibold mb-2">Clustered Wallets</h3>
-              <ul className="list-disc list-inside">
-                {clusters.map(w => (
-                  <li key={w.address}>{w.address} — Similarity: {w.similarity}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      );
+
+      return React.createElement("div", {className:"min-h-screen bg-gray-100 flex flex-col items-center p-10"}, [
+        React.createElement("h1", {className:"text-3xl font-bold mb-6"}, "WRM Static Demo"),
+        React.createElement("div", {className:"flex gap-2 mb-8"}, [
+          React.createElement("input", {
+            className:"w-96 px-4 py-2 rounded-lg border",
+            placeholder:"Enter wallet address…",
+            value: input,
+            onInput: e => setInput(e.target.value)
+          }),
+          React.createElement("button", {
+            className:"bg-blue-600 text-white px-4 py-2 rounded-lg shadow",
+            onClick: () => { setWallet({...mockWalletData, address: input}); setClusters(mockClusterData); }
+          }, "Search")
+        ]),
+        wallet && React.createElement("div", {className:"w-full max-w-xl bg-white shadow-2xl rounded-2xl p-6 mb-8"}, [
+          React.createElement("h2", {className:"text-xl font-bold"}, `Wallet: ${wallet.address}`),
+          React.createElement("p", {className:"mt-2"}, `Chains: ${wallet.chains.join(", ")}`),
+          React.createElement("p", null, `Total Value: $${wallet.totalValue}`),
+          React.createElement("p", null, `NFTs: ${wallet.nfts.length}`),
+          React.createElement("div", {className:"mt-2"}, [
+            React.createElement("h4", {className:"font-semibold"}, "Tags:"),
+            React.createElement("div", {className:"flex gap-2 mt-1"},
+              wallet.tags.map(tag => React.createElement("span", {
+                key:tag, className:"bg-purple-200 text-purple-800 px-2 py-1 rounded-xl text-sm"
+              }, tag))
+            )
+          ])
+        ]),
+        clusters.length > 0 && React.createElement("div", {className:"w-full max-w-xl bg-white shadow-md rounded-2xl p-6"}, [
+          React.createElement("h3", {className:"text-lg font-semibold mb-2"}, "Clustered Wallets"),
+          React.createElement("ul", {className:"list-disc list-inside"},
+            clusters.map(w => React.createElement("li", {key:w.address}, `${w.address} — Similarity: ${w.similarity}`))
+          )
+        ])
+      ]);
     }
-    ReactDOM.render(React.createElement(App), document.getElementById('root'));
+
+    createRoot(document.getElementById("root")).render(React.createElement(App));
   </script>
-</head>
-<body class="m-0">
-  <div id="root"></div>
 </body>
 </html>
